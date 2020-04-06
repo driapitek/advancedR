@@ -1,0 +1,28 @@
+---
+title: "Foundations"
+output: html_document
+---
+
+# Глава 2
+
+## Names and values
+
+Квиз 1
+```{r}
+df <- data.frame(runif(3), runif(3))
+names(df) <- c(1, 2)
+
+# я бы сделал вот так
+df$`3` <- df$`1` + df$`2`
+
+```
+
+Квиз 2 --- три размера объекта `x`
+```{r}
+x <- runif(1e6)
+y <- list(x, x, x)
+object.size(y)
+rm(x, y)
+```
+
+Квиз 3 ---
