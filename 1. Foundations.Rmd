@@ -7,6 +7,14 @@ output: html_document
 
 ## Names and values
 
+Библиотеки
+```{r}
+#install.packages("lobstr")
+library(lobstr)
+library(tidyverse)
+```
+
+
 Квиз 1
 ```{r}
 df <- data.frame(runif(3), runif(3))
@@ -25,4 +33,74 @@ object.size(y)
 rm(x, y)
 ```
 
-Квиз 3 ---
+Квиз 3 --- На какую строку `a` копируется в следующем примере?
+```{r}
+a <- c(1, 5, 3, 2)
+b <- a
+b[[1]] <- 10
+
+# Мой ответ --- вероятно всего во втором случае, но я не уверен
+```
+
+
+## Binding basics
+
+Эта функция показывает на какую ячейку памяти ссылается объект
+
+```{r}
+obj_addr(b)
+obj_addr(a)
+```
+
+Таким образом, конструкция `b <- a` означает --- имя это ссылка на значение.
+
+### Exercise
+
+```{r}
+# Такой мув ссылается на разные объекты памяти
+a <- 1:10
+d <- 1:10
+
+obj_addr(a)
+obj_addr(d)
+```
+
+Другими словами при таком объявлении создаётся два объекта.
+
+### Exercise
+
+Все ли эти объекты ссылаются на одну сущность
+
+```{r}
+mean_functions <- list(mean,
+                       base::mean,
+                       get("mean"),
+                       evalq(mean),
+                       match.fun("mean"))
+```
+
+Да, на один объект
+```{r}
+unique(obj_addrs(mean_functions))
+```
+
+## Copy-on-modify
+
+### Function calls
+
+```{r}
+f <- function(a) {
+  a
+}
+
+x <- c(1, 2, 3)
+cat(tracemem(x), "\n")
+#> <0x8f5c7f8>
+
+z <- f(x)
+# there's no copy here!
+
+untracemem(x)
+```
+
+
