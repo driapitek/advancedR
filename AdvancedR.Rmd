@@ -1,0 +1,206 @@
+---
+title: "Foundations"
+output: html_document
+---
+
+# Глава 2 --- Names and values
+
+
+Библиотеки
+```{r}
+#install.packages("lobstr")
+library(lobstr)
+library(tidyverse)
+```
+
+
+Квиз 1
+```{r}
+df <- data.frame(runif(3), runif(3))
+names(df) <- c(1, 2)
+
+# я бы сделал вот так
+df$`3` <- df$`1` + df$`2`
+
+```
+
+Квиз 2 --- три размера объекта `x`
+```{r}
+x <- runif(1e6)
+y <- list(x, x, x)
+object.size(y)
+rm(x, y)
+```
+
+Квиз 3 --- На какую строку `a` копируется в следующем примере?
+```{r}
+a <- c(1, 5, 3, 2)
+b <- a
+b[[1]] <- 10
+
+# Мой ответ --- вероятно всего во втором случае, но я не уверен
+```
+
+
+## Binding basics
+
+Эта функция показывает на какую ячейку памяти ссылается объект
+
+```{r}
+obj_addr(b)
+obj_addr(a)
+```
+
+Таким образом, конструкция `b <- a` означает --- имя это ссылка на значение.
+
+### Exercise
+
+```{r}
+# Такой мув ссылается на разные объекты памяти
+a <- 1:10
+d <- 1:10
+
+obj_addr(a)
+obj_addr(d)
+```
+
+Другими словами при таком объявлении создаётся два объекта.
+
+### Exercise
+
+Все ли эти объекты ссылаются на одну сущность
+
+```{r}
+mean_functions <- list(mean,
+                       base::mean,
+                       get("mean"),
+                       evalq(mean),
+                       match.fun("mean"))
+```
+
+Да, на один объект
+```{r}
+unique(obj_addrs(mean_functions))
+```
+
+## Copy-on-modify
+
+### Function calls
+
+```{r}
+f <- function(a) {
+  a
+}
+
+x <- c(1, 2, 3)
+cat(tracemem(x), "\n")
+#> <0x8f5c7f8>
+
+z <- f(x)
+# there's no copy here!
+
+untracemem(x)
+version
+```
+
+###  Lists
+
+```{r}
+df <- tibble(
+ a = list(c("a", "b"), "c"),
+ b = list(1:2, 3),
+ c = c(11, 22)
+)
+
+df %>%
+  unnest(a, b)
+```
+
+```{r}
+nested_list <- list(structure(list(name = "Hillary Clinton", type = "PERSON", 
+    metadata = structure(list(mid = "/m/0d06m5", wikipedia_url = "http://en.wikipedia.org/wiki/Hillary_Clinton"), .Names = c("mid", 
+    "wikipedia_url")), salience = 0.28831193, mentions = list(
+        structure(list(text = structure(list(content = "Clinton", 
+            beginOffset = 132L), .Names = c("content", "beginOffset"
+        )), type = "PROPER"), .Names = c("text", "type")), structure(list(
+            text = structure(list(content = "Mrs.", beginOffset = 127L), .Names = c("content", 
+            "beginOffset")), type = "COMMON"), .Names = c("text", 
+        "type")), structure(list(text = structure(list(content = "Clinton", 
+            beginOffset = 403L), .Names = c("content", "beginOffset"
+        )), type = "PROPER"), .Names = c("text", "type")), structure(list(
+            text = structure(list(content = "Mrs.", beginOffset = 398L), .Names = c("content", 
+            "beginOffset")), type = "COMMON"), .Names = c("text", 
+        "type")), structure(list(text = structure(list(content = "Hillary Clinton", 
+            beginOffset = 430L), .Names = c("content", "beginOffset"
+        )), type = "PROPER"), .Names = c("text", "type")))), .Names = c("name", 
+"type", "metadata", "salience", "mentions")), structure(list(
+    name = "Trump", type = "PERSON", metadata = structure(list(
+        mid = "/m/0cqt90", wikipedia_url = "http://en.wikipedia.org/wiki/Donald_Trump"), .Names = c("mid", 
+    "wikipedia_url")), salience = 0.24501903, mentions = list(
+        structure(list(text = structure(list(content = "Trump", 
+            beginOffset = 24L), .Names = c("content", "beginOffset"
+        )), type = "PROPER"), .Names = c("text", "type")), structure(list(
+            text = structure(list(content = "Mr.", beginOffset = 20L), .Names = c("content", 
+            "beginOffset")), type = "COMMON"), .Names = c("text", 
+        "type")))), .Names = c("name", "type", "metadata", "salience", 
+"mentions")))
+
+
+#tibble(a = nested_list) %>% 
+
+
+map_df(nested_list, function(x) {
+
+  df <- flatten_df(x[c("name", "type", "metadata", "salience")]) 
+
+  map_df(x$mentions, ~c(as.list(.$text), mentions_type=.$type)) 
+  # %>%
+  #   mutate(name=df$name, 
+  #          type=df$type, 
+  #          mid=df$mid,
+  #          wikipedia_url=df$wikipedia_url, salience=df$salience)
+
+})
+
+
+```
+
+```{r}
+
+library(tidyjson)
+
+json <- '{"poop": "bob", "age": 32, "gender": "male"}'
+json %>% json_types()
+json %>% gather_object()
+
+
+```
+
+
+
+```{r}
+df <- tibble(
+  character = c("Toothless", "Dory"),
+  metadata = list(
+    list(
+      species = "dragon",
+      color = "black",
+      films = c(
+        "How to Train Your Dragon",
+        "How to Train Your Dragon 2",
+        "How to Train Your Dragon: The Hidden World"
+       )
+    ),
+    list(
+      species = "clownfish",
+      color = "blue",
+      films = c("Finding Nemo", "Finding Dory")
+    )
+  )
+)
+
+df %>% unnest_wider(metadata)
+```
+
+
+# Глава 3 --- Vectors
