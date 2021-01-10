@@ -204,3 +204,17 @@ df %>% unnest_wider(metadata)
 
 
 # Глава 3 --- Vectors
+
+skip
+
+# Глава 4 --- Subseting
+
+skip
+
+# Глава 4 --- Control flow
+
+```{r}
+switch("x", x = , y = 2, z = 3)
+```
+
+
